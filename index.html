@@ -40,6 +40,16 @@ body{padding:env(safe-area-inset-top) 0 calc(env(safe-area-inset-bottom) + 90px)
   font-family:var(--sans);font-size:15px;font-weight:700;letter-spacing:.02em;
   padding:2px 0;outline:none}
 .top .team input::placeholder{color:var(--faint);font-weight:500}
+.mu{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+.mu input{width:100%;background:none;border:none;color:var(--dim);
+  font-family:var(--sans);font-size:15px;font-weight:700;letter-spacing:.04em;
+  padding:5px 7px;outline:none;text-transform:uppercase;border-radius:7px;
+  border:1px solid transparent;text-align:center;transition:all .12s}
+.mu input::placeholder{color:var(--faint);font-weight:600}
+.mu input.mine{color:var(--ink);background:rgba(255,255,255,.07);border-color:var(--line)}
+.mu .at{font-family:var(--mono);font-size:12px;color:var(--faint);flex:none}
+.mu .pick{flex:none;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--faint);font-weight:700;padding:0 2px;cursor:pointer}
 .x{width:30px;height:30px;flex:none;border:none;background:none;color:var(--faint);
   font-size:20px;line-height:1;border-radius:8px;cursor:pointer}
 .x:active{background:rgba(240,87,92,.15);color:var(--bad)}
@@ -101,7 +111,8 @@ body{padding:env(safe-area-inset-top) 0 calc(env(safe-area-inset-bottom) + 90px)
   </div>
   <div id="list"></div>
   <div class="empty" id="empty">
-    No games on the board.<br>Tap <b>Add game</b> as each one starts.
+    No games on the board.<br>Tap <b>Add game</b> as each one starts.<br>
+    <span style="font-size:11px">Tap the team you're holding to highlight it.</span>
   </div>
 </div>
 
@@ -196,13 +207,19 @@ function render(){
     card.className = 'card' + (z && z.cls ? ' ' + z.cls : '');
     card.innerHTML = `
       <div class="top">
-        <div class="team"><input placeholder="Team / game" value="${g.name||''}" data-k="name" data-id="${g.id}"></div>
+        <div class="mu">
+          <input placeholder="AWAY" value="${g.away||''}" data-k="away" data-id="${g.id}"
+                 class="${g.side==='away'?'mine':''}" data-side="away">
+          <span class="at">@</span>
+          <input placeholder="HOME" value="${g.home||''}" data-k="home" data-id="${g.id}"
+                 class="${g.side==='home'?'mine':''}" data-side="home">
+        </div>
         <button class="x" data-del="${g.id}">&times;</button>
       </div>
       <div class="body">
-        <div class="f"><label>Entry</label>
+        <div class="f"><label>${(g.side==='away'?g.away:g.home)||'Your'} entry</label>
           <input inputmode="decimal" placeholder="46" value="${g.entry||''}" data-k="entry" data-id="${g.id}"></div>
-        <div class="f live"><label>Other team now</label>
+        <div class="f live"><label>${(g.side==='away'?g.home:g.away)||'Other'} now</label>
           <input inputmode="decimal" placeholder="—" value="${g.now||''}" data-k="now" data-id="${g.id}"></div>
         <div class="out">
           <div class="pair" style="color:${z?z.css:'var(--faint)'}">${has?pair.toFixed(2):'—'}</div>
@@ -225,9 +242,32 @@ function render(){
     inp.addEventListener('input', ev => {
       const g = games.find(x => x.id == ev.target.dataset.id);
       if(!g) return;
-      g[ev.target.dataset.k] = ev.target.value;
+      const k = ev.target.dataset.k;
+      g[k] = ev.target.value;
+      if(k === 'away' || k === 'home'){
+        const pos = ev.target.selectionStart;
+        render(); save();
+        const again = document.querySelector(`input[data-id="${g.id}"][data-k="${k}"]`);
+        if(again){ again.focus(); try{ again.setSelectionRange(pos,pos); }catch(e){} }
+        return;
+      }
       liveUpdate();
       save();
+    });
+  });
+  list.querySelectorAll('.mu input').forEach(inp => {
+    inp.addEventListener('focus', ev => {
+      const g = games.find(x => x.id == ev.target.dataset.id);
+      if(!g) return;
+      const want = ev.target.dataset.side;
+      if(g.side !== want){
+        g.side = want;
+        // the prices follow the team: whoever is selected owns the entry
+        const t = g.entry; g.entry = g.now; g.now = t;
+        render(); save();
+        const again = document.querySelector(`input[data-id="${g.id}"][data-side="${want}"]`);
+        if(again) again.focus();
+      }
     });
   });
   list.querySelectorAll('[data-del]').forEach(b => {
@@ -266,9 +306,9 @@ function liveUpdate(){
 }
 
 document.getElementById('addBtn').addEventListener('click', () => {
-  games.push({id: ++seq, name:'', entry:'', now:''});
+  games.push({id: ++seq, away:'', home:'', side:'away', entry:'', now:''});
   render(); save();
-  const inputs = document.querySelectorAll('.card .team input');
+  const inputs = document.querySelectorAll('.mu input[data-side="away"]');
   if(inputs.length) inputs[inputs.length-1].focus();
 });
 
