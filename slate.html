@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A0D13">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Slate</title>
+<style>
+:root{
+  --bg:#0A0D13; --panel:#141A26; --panel2:#0F141E; --line:#222B3B;
+  --ink:#EEF1F6; --dim:#7E8CA3; --faint:#4B5768;
+  --deep:#2FD98B; --good:#8CD97B; --thin:#E8B33C; --dead:#6B7684; --bad:#F0575C;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Roboto Mono",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+  -webkit-text-size-adjust:100%}
+body{padding:env(safe-area-inset-top) 0 calc(env(safe-area-inset-bottom) + 74px)}
+.wrap{max-width:600px;margin:0 auto;padding:10px 11px 0}
+
+/* tabs */
+.tabs{display:flex;gap:6px;padding:4px;background:var(--panel2);border-radius:11px;
+  margin-bottom:12px;border:1px solid var(--line)}
+.tab{flex:1;padding:10px;text-align:center;border-radius:8px;font-size:12px;
+  font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+  cursor:pointer;border:none;background:none;font-family:var(--sans)}
+.tab.on{background:var(--ink);color:var(--bg)}
+.tab .ct{font-family:var(--mono);font-size:10px;opacity:.7;margin-left:4px}
+
+.bar2{display:flex;justify-content:space-between;align-items:center;
+  padding:0 2px 10px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+.rf{background:none;border:1px solid var(--line);color:var(--dim);border-radius:7px;
+  padding:5px 10px;font-size:11px;cursor:pointer;font-family:var(--sans)}
+
+/* wave header */
+.wave{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);
+  font-weight:800;margin:16px 0 7px;padding-left:2px;display:flex;
+  justify-content:space-between;align-items:baseline}
+.wave .n{font-family:var(--mono);color:var(--faint);letter-spacing:0}
+
+/* plan card */
+.pc{background:var(--panel);border:1px solid var(--line);border-radius:11px;
+  padding:9px 11px;margin-bottom:8px;display:grid;
+  grid-template-columns:auto 1fr auto auto;gap:9px;align-items:center}
+.pc.sel{border-color:var(--deep);background:rgba(47,217,139,.06)}
+.chk{width:24px;height:24px;border-radius:7px;border:1.5px solid var(--line);
+  background:none;color:var(--bg);font-size:14px;font-weight:900;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex:none}
+.pc.sel .chk{background:var(--deep);border-color:var(--deep)}
+.mu{min-width:0}
+.mu .g{font-size:14px;font-weight:800;letter-spacing:.03em}
+.mu .g .fav{color:var(--deep)}
+.mu .g .dg{color:var(--dim)}
+.mu .sp{font-size:10px;color:var(--faint);margin-top:2px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.pin{width:56px}
+.pin input{width:100%;background:var(--bg);border:1px solid var(--line);
+  border-radius:8px;color:var(--ink);font-family:var(--mono);font-size:17px;
+  font-weight:700;padding:7px 3px;text-align:center;outline:none}
+.pin input:focus{border-color:var(--dim)}
+.pin .lb{font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);
+  text-align:center;margin-top:3px;font-weight:700}
+.ahd{text-align:right;min-width:74px}
+.ahd .v{font-family:var(--mono);font-size:20px;font-weight:800;color:var(--deep)}
+.ahd .l{font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);
+  font-weight:700}
+.tg{grid-column:1/-1;display:flex;gap:5px;margin-top:2px}
+.tg .c{flex:1;text-align:center;padding:4px 2px;border-radius:6px;background:var(--bg);
+  border:1px solid var(--line);font-family:var(--mono);font-size:11px}
+.tg .c b{display:block;font-size:14px;color:var(--ink)}
+.tg .c s{display:block;font-size:8px;color:var(--faint);text-decoration:none}
+
+/* live card */
+.lc{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  margin-bottom:9px;overflow:hidden}
+.lc.deep{border-color:var(--deep)} .lc.good{border-color:rgba(140,217,123,.5)}
+.lc.bad{border-color:rgba(240,87,92,.45)}
+.lt{display:flex;align-items:center;gap:8px;padding:8px 11px;background:var(--panel2)}
+.lt .nm{flex:1;font-size:14px;font-weight:800;letter-spacing:.03em}
+.lt .nm .me{color:var(--ink)} .lt .nm .op{color:var(--dim)}
+.sw,.rm{border:none;background:none;color:var(--faint);font-size:12px;cursor:pointer;
+  padding:4px 7px;border-radius:6px;font-family:var(--sans);font-weight:700}
+.sw:active{background:rgba(255,255,255,.08)} .rm:active{color:var(--bad)}
+.lb2{display:grid;grid-template-columns:1fr 1fr auto;gap:9px;padding:10px 11px;
+  align-items:end}
+.f label{display:block;font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--dim);margin-bottom:4px;font-weight:700}
+.f input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;
+  color:var(--ink);font-family:var(--mono);font-size:22px;font-weight:700;
+  padding:7px 4px;text-align:center;outline:none}
+.f input:focus{border-color:var(--dim)}
+.out{text-align:right;min-width:104px}
+.out .p{font-family:var(--mono);font-size:31px;font-weight:800;line-height:1;
+  font-variant-numeric:tabular-nums}
+.out .s{font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;
+  margin-top:3px}
+.out .m{font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:2px}
+
+.empty{text-align:center;padding:44px 20px;color:var(--faint);font-size:13px;
+  line-height:1.7}
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(10,13,19,.95);
+  backdrop-filter:blur(12px);border-top:1px solid var(--line);
+  padding:9px 11px calc(9px + env(safe-area-inset-bottom));z-index:9}
+.bar .in{max-width:600px;margin:0 auto;display:flex;gap:8px;align-items:center}
+.mini input{width:60px;background:var(--panel);border:1px solid var(--line);
+  border-radius:8px;color:var(--ink);font-family:var(--mono);font-size:13px;
+  padding:9px 3px;text-align:center;outline:none}
+.mini .l{font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);
+  text-align:center;margin-top:2px;font-weight:700}
+.hint{flex:1;font-size:10px;color:var(--faint);line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab on" id="tPlan">Plan<span class="ct" id="cPlan"></span></button>
+    <button class="tab" id="tLive">Live<span class="ct" id="cLive"></span></button>
+  </div>
+  <div class="bar2">
+    <span id="stat">loading schedule…</span>
+    <button class="rf" id="refresh">reload</button>
+  </div>
+  <div id="plan"></div>
+  <div id="live" style="display:none"></div>
+</div>
+
+<div class="bar"><div class="in">
+  <div><div class="mini"><input id="qty" inputmode="numeric" value="400"></div>
+       <div class="l">contracts</div></div>
+  <div><div class="mini"><input id="fee" inputmode="decimal" value="0.02"></div>
+       <div class="l">fee</div></div>
+  <div class="hint" id="hint">Tap a game to track it live.<br>Price = AWAY team, in cents.</div>
+</div></div>
+
+<script>
+const MLB="https://statsapi.mlb.com/api/v1";
+const KEY="slate_v1";
+let G=[], tab="plan", ABBR={};
+
+const $=id=>document.getElementById(id);
+const px=v=>{v=String(v).trim().replace(/[^0-9.]/g,"");if(!v)return NaN;
+  let n=parseFloat(v);return isNaN(n)?NaN:(n>1.5?n/100:n);};
+const money=n=>(n<0?"\u2212":"+")+"$"+Math.abs(n).toFixed(2);
+const cfg=()=>({q:Math.max(1,parseFloat($("qty").value)||400),
+                f:Math.max(0,parseFloat($("fee").value)||0.02)});
+
+function pAhead(p){return p>=.56?90:p>=.52?80:p>=.48?73:p>=.44?66:60;}
+const ZONES=[{m:.80,n:"Deep lock",c:"var(--deep)",k:"deep"},
+             {m:.90,n:"Good lock",c:"var(--good)",k:"good"},
+             {m:.96,n:"Thin",c:"var(--thin)",k:""},
+             {m:1.0,n:"Fees eat it",c:"var(--dead)",k:""},
+             {m:99,n:"Do not complete",c:"var(--bad)",k:"bad"}];
+
+function et(u,ts){
+  if(ts){const d=new Date(ts);
+    return d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});}
+  try{let h=+u.slice(0,2),m=+u.slice(3,5);h=(h-4+24)%24;
+    return `${h%12||12}:${String(m).padStart(2,"0")} ${h<12?"AM":"PM"}`;}catch(e){return u;}}
+function mins(u){try{return +u.slice(0,2)*60+ +u.slice(3,5);}catch(e){return 0;}}
+
+function save(){try{localStorage.setItem(KEY,JSON.stringify(
+  {G,qty:$("qty").value,fee:$("fee").value,ts:Date.now()}));}catch(e){}}
+function restore(){try{const r=localStorage.getItem(KEY);if(!r)return null;
+  const d=JSON.parse(r);
+  if(d.ts&&Date.now()-d.ts>18*3600*1000){localStorage.removeItem(KEY);return null;}
+  if(d.qty)$("qty").value=d.qty; if(d.fee)$("fee").value=d.fee;
+  return d.G||null;}catch(e){return null;}}
+
+async function loadSchedule(force){
+  const cached=restore();
+  if(cached&&cached.length&&!force){G=cached;$("stat").textContent=
+    `${G.length} games · saved`;render();return;}
+  $("stat").textContent="loading schedule…";
+  try{
+    if(!Object.keys(ABBR).length){
+      const t=await (await fetch(`${MLB}/teams?sportId=1`)).json();
+      t.teams.forEach(x=>ABBR[x.id]=x.abbreviation.toUpperCase());
+    }
+    const d=new Date();
+    const iso=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    const s=await (await fetch(`${MLB}/schedule?sportId=1&date=${iso}&hydrate=probablePitcher`)).json();
+    const out=[];
+    (s.dates||[]).forEach(dt=>dt.games.forEach(g=>{
+      const a=g.teams.away,h=g.teams.home;
+      out.push({id:g.gamePk,away:ABBR[a.team.id]||"?",home:ABBR[h.team.id]||"?",
+        utc:(g.gameDate||"").slice(11,16),
+        ts:Date.parse(g.gameDate||"")||0,
+        asp:((a.probablePitcher||{}).fullName||"").split(" ").slice(-1)[0],
+        hsp:((h.probablePitcher||{}).fullName||"").split(" ").slice(-1)[0],
+        ap:"",sel:false,side:"",entry:"",now:""});
+    }));
+    out.sort((x,y)=>x.ts-y.ts);
+    // keep any prices already entered
+    if(cached) cached.forEach(c=>{const m=out.find(o=>o.id===c.id);
+      if(m)Object.assign(m,{ap:c.ap,sel:c.sel,side:c.side,entry:c.entry,now:c.now});});
+    G=out; $("stat").textContent=`${G.length} games · ${iso}`;
+  }catch(e){
+    $("stat").textContent="couldn't load schedule — check connection";
+  }
+  render(); save();
+}
+
+function waves(list){
+  const L=[...list].sort((a,b)=>(a.ts||0)-(b.ts||0));
+  const out=[];let cur=[],last=null;
+  L.forEach(g=>{const t=(g.ts||0)/60000;
+    if(last===null||t-last<=45)cur.push(g);else{out.push(cur);cur=[g];}last=t;});
+  if(cur.length)out.push(cur);return out;}
+
+function render(){
+  $("cPlan").textContent=G.length?G.length:"";
+  const sel=G.filter(g=>g.sel);
+  $("cLive").textContent=sel.length?sel.length:"";
+  $("plan").style.display=tab==="plan"?"":"none";
+  $("live").style.display=tab==="live"?"":"none";
+  $("hint").innerHTML=tab==="plan"
+    ? "Tap a game to track it live.<br>Price = AWAY team, in cents."
+    : "Update the OTHER team's price.<br>Tap ⇄ to switch sides.";
+  tab==="plan"?renderPlan():renderLive();
+}
+
+function renderPlan(){
+  const el=$("plan"); el.innerHTML="";
+  if(!G.length){el.innerHTML='<div class="empty">No games loaded.<br>Tap reload.</div>';return;}
+  waves(G).forEach((w,i)=>{
+    const hd=document.createElement("div");
+    hd.className="wave";
+    hd.innerHTML=`<span>Wave ${i+1} · ${et(w[0].utc,w[0].ts)}–${et(w[w.length-1].utc,w[w.length-1].ts)}</span>
+                  <span class="n">${w.length} games</span>`;
+    el.appendChild(hd);
+    w.forEach(g=>{
+      const ap=px(g.ap), hp=isNaN(ap)?NaN:1-ap;
+      const has=!isNaN(ap);
+      const favAway=has&&ap>=hp;
+      const favpx=has?(favAway?ap:hp):NaN;
+      const c=document.createElement("div");
+      c.className="pc"+(g.sel?" sel":"");
+      const aw=has?(favAway?"fav":"dg"):"", hm=has?(favAway?"dg":"fav"):"";
+      c.innerHTML=`
+        <button class="chk" data-sel="${g.id}">${g.sel?"&#10003;":""}</button>
+        <div class="mu">
+          <div class="g"><span class="${aw}">${g.away}</span>
+            <span style="color:var(--faint)">@</span>
+            <span class="${hm}">${g.home}</span>
+            <span style="color:var(--faint);font-size:11px;font-weight:600"> ${et(g.utc,g.ts)}</span></div>
+          ${(g.asp||g.hsp)?`<div class="sp">${g.asp||"?"} vs ${g.hsp||"?"}</div>`:""}
+        </div>
+        <div class="pin"><input inputmode="decimal" placeholder="—" value="${g.ap}"
+             data-ap="${g.id}"><div class="lb">${g.away}</div></div>
+        <div class="ahd"><div class="v">${has?pAhead(favpx)+"%":"—"}</div>
+             <div class="l">ahead</div></div>
+        ${has?`<div class="tg">${[0.90,0.85,0.80].map(t=>{
+          const need=t-favpx;
+          return `<div class="c"><s>pair ${t.toFixed(2)}</s><b>${need>0.01?need.toFixed(2):"n/a"}</b></div>`;
+        }).join("")}</div>`:""}`;
+      el.appendChild(c);
+    });
+  });
+  el.querySelectorAll("[data-ap]").forEach(i=>i.addEventListener("input",e=>{
+    const g=G.find(x=>x.id==e.target.dataset.ap); if(!g)return;
+    g.ap=e.target.value;
+    const p=px(g.ap);
+    if(!isNaN(p)&&!g.entry){ g.side=p>=0.5?"away":"home";
+      g.entry=(g.side==="away"?p:1-p).toFixed(2); }
+    const pos=e.target.selectionStart; renderPlan(); save();
+    const again=document.querySelector(`[data-ap="${g.id}"]`);
+    if(again){again.focus();try{again.setSelectionRange(pos,pos);}catch(x){}}
+  }));
+  el.querySelectorAll("[data-sel]").forEach(b=>b.addEventListener("click",e=>{
+    const g=G.find(x=>x.id==e.target.dataset.sel); if(!g)return;
+    g.sel=!g.sel;
+    if(g.sel&&!g.side){const p=px(g.ap);
+      g.side=(!isNaN(p)&&p>=0.5)?"away":"home";
+      if(!isNaN(p))g.entry=(g.side==="away"?p:1-p).toFixed(2);}
+    render(); save();
+  }));
+}
+
+function renderLive(){
+  const el=$("live"); el.innerHTML="";
+  const sel=G.filter(g=>g.sel);
+  if(!sel.length){el.innerHTML=
+    '<div class="empty">No games selected.<br>Tap games on the <b>Plan</b> tab.</div>';return;}
+  const {q,f}=cfg();
+  sel.forEach(g=>{
+    const me=g.side==="away"?g.away:g.home, op=g.side==="away"?g.home:g.away;
+    const e=px(g.entry), a=px(g.now), has=!isNaN(e)&&!isNaN(a);
+    const pair=has?e+a:NaN, z=has?ZONES.find(z=>pair<z.m):null;
+    const prof=has?(1-2*f-pair)*q:NaN;
+    const c=document.createElement("div");
+    c.className="lc"+(z&&z.k?" "+z.k:"");
+    c.innerHTML=`
+      <div class="lt">
+        <div class="nm"><span class="me">${me}</span>
+          <span style="color:var(--faint)">vs</span>
+          <span class="op">${op}</span>
+          <span style="color:var(--faint);font-size:11px"> ${et(g.utc,g.ts)}</span></div>
+        <button class="sw" data-sw="${g.id}">&#8646;</button>
+        <button class="rm" data-rm="${g.id}">&times;</button>
+      </div>
+      <div class="lb2">
+        <div class="f"><label>${me} entry</label>
+          <input inputmode="decimal" placeholder="—" value="${g.entry}" data-e="${g.id}"></div>
+        <div class="f"><label>${op} now</label>
+          <input inputmode="decimal" placeholder="—" value="${g.now}" data-n="${g.id}"></div>
+        <div class="out">
+          <div class="p" style="color:${z?z.c:"var(--faint)"}">${has?pair.toFixed(2):"—"}</div>
+          <div class="s" style="color:${z?z.c:"var(--faint)"}">${z?z.n:"&nbsp;"}</div>
+          <div class="m">${has?money(prof):"&nbsp;"}</div>
+        </div>
+      </div>
+      ${!isNaN(e)?`<div class="tg" style="padding:0 11px 10px">${[0.90,0.85,0.80].map(t=>{
+        const need=t-e, on=!isNaN(a)&&a<=need+1e-9;
+        return `<div class="c" style="${on?"border-color:var(--deep);background:rgba(47,217,139,.1)":""}">
+          <s>pair ${t.toFixed(2)}</s><b style="${on?"color:var(--deep)":""}">${need>0.01?need.toFixed(2):"n/a"}</b></div>`;
+      }).join("")}</div>`:""}`;
+    el.appendChild(c);
+  });
+  el.querySelectorAll("[data-e],[data-n]").forEach(i=>i.addEventListener("input",e=>{
+    const k=e.target.dataset.e?"entry":"now";
+    const id=e.target.dataset.e||e.target.dataset.n;
+    const g=G.find(x=>x.id==id); if(!g)return;
+    g[k]=e.target.value; liveNums(); save();
+  }));
+  el.querySelectorAll("[data-sw]").forEach(b=>b.addEventListener("click",e=>{
+    const g=G.find(x=>x.id==e.target.dataset.sw); if(!g)return;
+    g.side=g.side==="away"?"home":"away";
+    const t=g.entry; g.entry=g.now; g.now=t;
+    renderLive(); save();
+  }));
+  el.querySelectorAll("[data-rm]").forEach(b=>b.addEventListener("click",e=>{
+    const g=G.find(x=>x.id==e.target.dataset.rm); if(!g)return;
+    g.sel=false; render(); save();
+  }));
+}
+
+function liveNums(){
+  const {q,f}=cfg(); const sel=G.filter(g=>g.sel);
+  document.querySelectorAll("#live .lc").forEach((c,i)=>{
+    const g=sel[i]; if(!g)return;
+    const e=px(g.entry), a=px(g.now), has=!isNaN(e)&&!isNaN(a);
+    const pair=has?e+a:NaN, z=has?ZONES.find(z=>pair<z.m):null;
+    c.className="lc"+(z&&z.k?" "+z.k:"");
+    c.querySelector(".p").textContent=has?pair.toFixed(2):"—";
+    c.querySelector(".p").style.color=z?z.c:"var(--faint)";
+    c.querySelector(".s").textContent=z?z.n:"\u00a0";
+    c.querySelector(".s").style.color=z?z.c:"var(--faint)";
+    c.querySelector(".m").textContent=has?money((1-2*f-pair)*q):"\u00a0";
+    c.querySelectorAll(".tg .c").forEach((chip,j)=>{
+      const t=[0.90,0.85,0.80][j], need=e-0+0?t-e:t-e;
+      const on=!isNaN(a)&&a<=(t-e)+1e-9;
+      chip.style.borderColor=on?"var(--deep)":"var(--line)";
+      chip.style.background=on?"rgba(47,217,139,.1)":"var(--bg)";
+      const b=chip.querySelector("b");
+      b.textContent=(t-e)>0.01?(t-e).toFixed(2):"n/a";
+      b.style.color=on?"var(--deep)":"var(--ink)";
+    });
+  });
+}
+
+$("tPlan").onclick=()=>{tab="plan";$("tPlan").classList.add("on");
+  $("tLive").classList.remove("on");render();};
+$("tLive").onclick=()=>{tab="live";$("tLive").classList.add("on");
+  $("tPlan").classList.remove("on");render();};
+$("refresh").onclick=()=>loadSchedule(true);
+["qty","fee"].forEach(id=>$(id).addEventListener("input",()=>{
+  if(tab==="live")liveNums(); save();}));
+window.addEventListener("pagehide",save);
+document.addEventListener("visibilitychange",()=>{if(document.hidden)save();});
+
+loadSchedule(false);
+</script>
+</body>
+</html>
